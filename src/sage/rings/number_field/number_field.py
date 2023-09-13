@@ -9481,6 +9481,10 @@ class NumberField_absolute(NumberField_generic):
             [ 1.00000000000000 -1.25992104989487  1.58740105196820]
             [ 1.41421356237... 0.8908987181... -1.12246204830...]
             [0.000000000000000  1.54308184421...  1.94416129723...]
+            sage: F.minkowski_embedding(prec=Infinity)
+            [                  1 -1.259921049894873?  1.587401051968200?]
+            [ 1.414213562373095? 0.8908987181403393? -1.122462048309373?]
+            [                  0  1.543081844217053?  1.944161297239666?]
             sage: F.minkowski_embedding([1, alpha+2, alpha^2-alpha])
             [ 1.00000000000000 0.740078950105127  2.84732210186307]
             [ 1.41421356237...  3.7193258428... -2.01336076644...]
@@ -9666,6 +9670,19 @@ class NumberField_absolute(NumberField_generic):
                From: Number Field in alpha with defining polynomial x^3 + 7
                To:   Complex Field with 10 bits of precision
                Defn: alpha |--> 0.96 + 1.7*I]
+            sage: F.places(prec=Infinity, all=True)
+            [Ring morphism:
+               From: Number Field in alpha with defining polynomial x^3 + 7
+               To:   Algebraic Real Field
+               Defn: alpha |--> -1.912931182772389?,
+             Ring morphism:
+               From: Number Field in alpha with defining polynomial x^3 + 7
+               To:   Algebraic Field
+               Defn: alpha |--> 0.9564655913861945? + 1.656646999972302?*I,
+             Ring morphism:
+               From: Number Field in alpha with defining polynomial x^3 + 7
+               To:   Algebraic Field
+               Defn: alpha |--> 0.9564655913861945? - 1.656646999972302?*I]
         """
         if prec is None:
             R = RIF
