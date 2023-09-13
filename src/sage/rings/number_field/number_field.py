@@ -9442,7 +9442,8 @@ class NumberField_absolute(NumberField_generic):
         `\alpha` is the generator of ``self`` over
         `\QQ`, i.e. ``self.gen(0)``. If `B` is not ``None``, return
         the images of the vectors in `B` as the columns instead. If ``prec`` is
-        not ``None``, use ``RealField(prec)`` instead of ``RDF``.
+        Infinity, use ``QQbar``. If ``prec`` is not ``None``, use
+        ``RealField(prec)`` instead of ``RDF``.
 
         This embedding is the so-called "Minkowski embedding" of a number
         field in `\RR^n`: given the `n` embeddings
@@ -9492,6 +9493,8 @@ class NumberField_absolute(NumberField_generic):
         n = self.degree()
         if prec is None:
             R = sage.rings.real_double.RDF
+        elif prec == Infinity:
+            R = sage.rings.qqbar.QQbar
         else:
             R = sage.rings.real_mpfr.RealField(prec)
         r, s = self.signature()
