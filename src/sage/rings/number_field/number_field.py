@@ -9594,7 +9594,7 @@ class NumberField_absolute(NumberField_generic):
         hom = Hom(self, VectorSpace(RR, len(closure_map(self(0), prec))), Sets())
         return hom(closure_map)
 
-    def places(self, all_complex=False, prec=None):
+    def places(self, all_complex=False, prec=None, all=False):
         r"""
         Return the collection of all infinite places of ``self``.
 
@@ -9612,6 +9612,10 @@ class NumberField_absolute(NumberField_generic):
         There is an optional flag ``all_complex``, which defaults to ``False``. If
         ``all_complex`` is ``True``, then the real embeddings are returned as
         embeddings into ``CIF`` instead of ``RIF``.
+
+        There is another optional flag ``all``, which defaults to ``False``. If
+        ``all`` is ``True``, then all infinite places, including their
+        conjugates, are returned.
 
         EXAMPLES::
 
@@ -9682,26 +9686,29 @@ class NumberField_absolute(NumberField_generic):
 
         # first, find the intervals with roots, and see how much
         # precision we need to approximate the roots
-        #
-        all_intervals = [x[0] for x in self.defining_polynomial().roots(C)]
+        all_intervals = self.defining_polynomial().roots(C,
+                                                         multiplicities=False)
 
         # first, set up the real places
         if all_complex:
             real_intervals = [x for x in all_intervals if x.imag().is_zero()]
         else:
-            real_intervals = [x[0] for x in self.defining_polynomial().roots(R)]
+            real_intervals = self.defining_polynomial().roots(
+                R, multiplicities=False)
 
         if prec is None:
-            real_places = [self.hom([i.center()], check=False)
-                           for i in real_intervals]
+            real_intervals = [i.center() for i in real_intervals]
+            all_intervals = [i.center() for i in all_intervals]
 
-            complex_places = [self.hom([i.center()], check=False)
-                              for i in all_intervals if i.imag() > 0]
-        else:
-            real_places = [self.hom([i], check=False) for i in real_intervals]
-
-            complex_places = [self.hom([i], check=False)
-                              for i in all_intervals if i.imag() > 0]
+        real_places = [self.hom([i], check=False) for i in real_intervals]
+        complex_places = [
+            self.hom([i], check=False) for i in all_intervals if i.imag() > 0
+        ]
+        if all:
+            complex_places.extend([
+                self.hom([i], check=False) for i in all_intervals
+                if i.imag() < 0
+            ])
 
         return real_places + complex_places
 
