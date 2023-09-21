@@ -9493,7 +9493,12 @@ class NumberField_absolute(NumberField_generic):
             [0.740078950105127]
             [ 3.7193258428...]
             [ 1.54308184421...]
+            sage: F.minkowski_embedding(1)
+            Traceback (most recent call last):
+            ...
+            RuntimeError: 1 is not a basis of Number Field in alpha with defining polynomial x^3 + 2. To compute the embedding of an element, try K.minkowski_embedding() * a.vector().column()
         """
+        from collections.abc import Iterable
         n = self.degree()
         if prec is None:
             R = sage.rings.real_double.RDF
@@ -9506,6 +9511,19 @@ class NumberField_absolute(NumberField_generic):
 
         if B is None:
             B = [(self.gen(0))**i for i in range(n)]
+
+        # Is it possible that this throw an error?
+        if B in self:
+            raise RuntimeError(
+                f"{B} is not a basis of {self}. To compute the embedding of an"\
+                " element, try K.minkowski_embedding() * a.vector().column()"
+            )
+
+        if not isinstance(B, Iterable):
+            raise TypeError(f"Basis {B} should be a basis of {self}")
+
+        if not all(e in self for e in B):
+            raise RuntimeError(f"Basis {B} consists of non-field elements.")
 
         A = ZZ['x']
         f = A.gen(0)**2 - 2
