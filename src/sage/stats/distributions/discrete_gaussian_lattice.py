@@ -144,7 +144,7 @@ class DiscreteGaussianDistributionLatticeSampler(SageObject):
         sage: D = DGL(identity_matrix(2), 3.0)
         sage: S = [D() for _ in range(2^12)]
         sage: l = [vector(v.list() + [S.count(v)]) for v in set(S)]
-        sage: list_plot3d(l, point_list=True, interpolation='nn')
+        sage: list_plot3d(l, point_list=True, interpolation='nn')                       # needs sage.plot
         Graphics3d Object
 
     REFERENCES:
@@ -207,33 +207,37 @@ class DiscreteGaussianDistributionLatticeSampler(SageObject):
 
         EXAMPLES::
 
-            sage: from sage.stats.all import DGL
-            sage: n = 3; sigma = 1.0
-            sage: D = DGL(ZZ^n, sigma)
-            sage: f = D.f
-            sage: nf = D._normalisation_factor_zz(); nf
-            15.7496...
-
-            sage: from collections import defaultdict
-            sage: counter = defaultdict(Integer)
-            sage: m = 0
+            sage: from collections import Counter
             sage: def add_samples(i):
             ....:     global counter, m
             ....:     for _ in range(i):
             ....:         counter[D()] += 1
             ....:         m += 1
 
-            sage: v = vector(ZZ, n, (0, 0, 0))
-            sage: v.set_immutable()
-            sage: while v not in counter: add_samples(1000)
+            sage: from sage.stats.all import DGL
+            sage: n = 3; sigma = 1.0
+            sage: D = DGL(ZZ^n, sigma)
+            sage: f = D.f
+            sage: nf = D._normalisation_factor_zz(); nf                                 # needs sage.symbolic
+            15.7496...
 
-            sage: while abs(m*f(v)*1.0/nf/counter[v] - 1.0) >= 0.1: add_samples(1000)
+            sage: m = 0
+            sage: counter = Counter()
+            sage: v = vector(ZZ, n)
+            sage: v.set_immutable()
+            sage: while v not in counter:
+            ....:     add_samples(1000)
+
+            sage: while abs(m*D.f(v)*1.0/nf/counter[v] - 1.0) >= 0.1:                   # needs sage.symbolic
+            ....:     add_samples(1000)
 
             sage: v = vector(ZZ, n, (-1, 2, 3))
             sage: v.set_immutable()
-            sage: while v not in counter: add_samples(1000)
+            sage: while v not in counter:
+            ....:     add_samples(1000)
 
-            sage: while abs(m*f(v)*1.0/nf/counter[v] - 1.0) >= 0.2: add_samples(1000)  # long time
+            sage: while abs(m*D.f(v)*1.0/fn/counter[v] - 1.0) >= 0.2:   # long time, needs sage.symbolic
+            ....:     add_samples(1000)
 
             sage: D = DGL(ZZ^8, 0.5)
             sage: D._normalisation_factor_zz(tau=3)
@@ -297,7 +301,8 @@ class DiscreteGaussianDistributionLatticeSampler(SageObject):
         if self.is_spherical and not self._c_in_lattice:
             raise NotImplementedError("Lattice must contain 0 for now.")
 
-        if self.B.base_ring() not in ZZ:
+        # TODO: Extend to support QQ lattices - require rescaling `.qfrep` call
+        if self.B.base_ring() not in (ZZ,):
             raise NotImplementedError("Lattice must be integral for now.")
 
         sigma = self._sigma
@@ -350,11 +355,10 @@ class DiscreteGaussianDistributionLatticeSampler(SageObject):
             sage: c = vector(ZZ, [7, 2, 5])
             sage: D = DGL(ZZ^n, Sigma, c)
             sage: r = D._maximal_r(); r
-            0.58402...
+            0.5840...
             sage: e_vals = (D.sigma - r^2 * D.Q).eigenvalues()
             sage: assert all(e_val >= -1e-12 for e_val in e_vals)
         """
-        # TODO: Write doctest
         if self.is_spherical:
             raise RuntimeError("You have encountered a bug. File it! :)")
 
@@ -411,44 +415,56 @@ class DiscreteGaussianDistributionLatticeSampler(SageObject):
 
         EXAMPLES::
 
-            sage: from sage.stats.all import DGL
-            sage: n = 2; sigma = 3.0
-            sage: D = DGL(ZZ^n, sigma)
-            sage: f = D.f
-            sage: nf = D._normalisation_factor_zz(); nf
-            56.5486677646...
-
-            sage: from collections import defaultdict
-            sage: counter = defaultdict(Integer)
-            sage: m = 0
+            sage: from collections import Counter
             sage: def add_samples(i):
             ....:     global counter, m
             ....:     for _ in range(i):
             ....:         counter[D()] += 1
             ....:         m += 1
 
+            sage: from sage.stats.all import DGL
+            sage: n = 2; sigma = 3.0
+            sage: D = DGL(ZZ^n, sigma)
+            sage: f = D.f
+            sage: nf = D._normalisation_factor_zz(); nf                                 # needs sage.symbolic
+            56.5486...
+
+            sage: m = 0
+            sage: counter = Counter()
             sage: v = vector(ZZ, n, (-3, -3))
             sage: v.set_immutable()
-            sage: while v not in counter: add_samples(1000)
-            sage: while abs(m*f(v)*1.0/nf/counter[v] - 1.0) >= 0.1: add_samples(1000)
+            sage: while v not in counter:
+            ....:     add_samples(1000)
+            sage: while abs(m*D.f(v)*1.0/nf/counter[v] - 1.0) >= 0.1:                   # needs sage.symbolic
+            ....:     add_samples(1000)
 
-            sage: counter = defaultdict(Integer)
-            sage: v = vector(ZZ, n, (0, 0))
+            sage: m = 0
+            sage: counter = Counter()
+            sage: v = vector(ZZ, n)
             sage: v.set_immutable()
-            sage: while v not in counter: add_samples(1000)
-            sage: while abs(m*f(v)*1.0/nf/counter[v] - 1.0) >= 0.1: add_samples(1000)
+            sage: while v not in counter:
+            ....:     add_samples(1000)
+            sage: while abs(m*D.f(v)*1.0/nf/counter[v] - 1.0) >= 0.1:                   # needs sage.symbolic
+            ....:     add_samples(1000)
 
         The sampler supports non-spherical covariance in the form of a Gram
         matrix.
 
             sage: n = 3
-            sage: Sigma = Matrix(ZZ, [[5, -2, 4], [-2, 10, -5], [4, -5, 5]])
+            sage: Sigma = Matrix(ZZ, [[10, -2, 5], [-2, 11, 3], [5, 3, 9]])
             sage: c = vector(ZZ, [7, 2, 5])
             sage: D = DGL(ZZ^n, Sigma, c)
             sage: nf = D._normalisation_factor_zz(); nf # This has not been properly implemented
-            63.76927...
-            sage: while v not in counter: add_samples(1000)
-            sage: while abs(m*f(v)*1.0/nf/counter[v] - 1.0) >= 0.1: add_samples(1000)
+            231.4957...
+
+            sage: m = 0
+            sage: counter = Counter()
+            sage: v = vector(ZZ, n)
+            sage: v.set_immutable()
+            sage: while v not in counter:
+            ....:     add_samples(1000)
+            sage: while abs(m*D.f(v)*1.0/nf/counter[v] - 1.0) >= 0.1:                   # needs sage.symbolic
+            ....:     add_samples(1000)
 
         The non-spherical sampler supports offline computation to speed up
         sampling. This will be useful when changing the center `c` is supported.
@@ -465,13 +481,13 @@ class DiscreteGaussianDistributionLatticeSampler(SageObject):
 
             sage: from sage.stats.all import DGL
             sage: qf = QuadraticForm(matrix(3, [2, 1, 1,  1, 2, 1,  1, 1, 2]))
-            sage: D = DGL(qf, 3.0); D
+            sage: D = DGL(qf, 3.0); D                                                   # needs sage.symbolic
             Discrete Gaussian sampler with Gaussian parameter σ = 3.00000000000000, c=(0, 0, 0) over lattice with basis
             <BLANKLINE>
             [2 1 1]
             [1 2 1]
             [1 1 2]
-            sage: D().parent() is D.c.parent()
+            sage: D().parent() is D.c.parent()                                          # needs sage.symbolic
             True
         """
         precision = DGL.compute_precision(precision, sigma)
